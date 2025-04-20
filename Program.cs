@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
@@ -35,13 +36,19 @@ public class Program
         var databaseTable = _configuration["database.table"];
         var connectionString = $"Server={databaseHost};Port={databasePort};Database={databaseTable};User Id={databaseUsername};Password={databasePassword};";
         
+        var connectAddress = _configuration["connect_address"];
+        var apiToken = _configuration["admin_api_token"];
+        
+        if (string.IsNullOrWhiteSpace(apiToken) || string.IsNullOrWhiteSpace(connectAddress))
+            return;
+        
         _services = new ServiceCollection()
             .AddSingleton(_configuration)
             .AddSingleton(SocketConfig)
             .AddSingleton<DiscordSocketClient>()
-            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-            .AddSingleton<InteractionHandler>()
-            .AddSingleton<WhitelistService>()
+            .AddSingleton<CommandService>()
+            .AddSingleton<CommandHandlingService>()
+            .AddScoped<WhitelistService>(_ => new WhitelistService(connectAddress, apiToken))
             .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString))
             .BuildServiceProvider();
 
@@ -61,10 +68,10 @@ public class Program
 
     private static async Task InitializeServices(IServiceProvider services)
     {
-        await _services.GetRequiredService<InteractionHandler>()
+        await _services.GetRequiredService<CommandHandlingService>()
             .InitializeAsync();
-        await _services.GetRequiredService<WhitelistService>()
-            .InitializeAsync();
+        // await _services.GetRequiredService<WhitelistVoteService>()
+        //     .InitializeAsync();
     }
 
     private static Task LogAsync(LogMessage message)

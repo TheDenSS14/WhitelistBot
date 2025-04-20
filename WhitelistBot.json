@@ -4,5 +4,7 @@
   "database.username": "",
   "database.password": "",
   "database.port": "",
-  "database.table": ""
+  "database.table": "",
+  "connect_address": "",
+  "admin_api_token": ""
 }
