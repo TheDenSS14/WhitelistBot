@@ -48,6 +48,7 @@ public class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandlingService>()
+            .AddSingleton<WhitelistVoteService>()
             .AddScoped<WhitelistService>(_ => new WhitelistService(connectAddress, apiToken))
             .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString))
             .BuildServiceProvider();
@@ -70,8 +71,8 @@ public class Program
     {
         await _services.GetRequiredService<CommandHandlingService>()
             .InitializeAsync();
-        // await _services.GetRequiredService<WhitelistVoteService>()
-        //     .InitializeAsync();
+        await _services.GetRequiredService<WhitelistVoteService>()
+            .InitializeAsync();
     }
 
     private static Task LogAsync(LogMessage message)

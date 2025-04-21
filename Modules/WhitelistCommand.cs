@@ -8,6 +8,7 @@ namespace WhitelistBot.Modules;
 public class WhitelistCommand : ModuleBase<SocketCommandContext>
 {
     public WhitelistService WhitelistService { get; set; } = null!;
+    public WhitelistVoteService WhitelistVoteService { get; set; } = null!;
 
     [Command("whitelist")]
     [RequireContext(ContextType.Guild)]
@@ -75,6 +76,18 @@ public class WhitelistCommand : ModuleBase<SocketCommandContext>
         
         await guildUser.AddRoleAsync(role);
         await reply.ReplyAsync(":white_check_mark: You have been whitelisted!");
+    }
+
+    [Command("whitelistvote")]
+    [RequireContext(ContextType.Guild)]
+    [RequireUserPermission(GuildPermission.ManageMessages)]
+    public async Task WhitelistVote()
+    {
+        if (Context.Message.ReferencedMessage is not { } reply)
+            return;
+        
+        await Context.Message.DeleteAsync();
+        await WhitelistVoteService.WhitelistMessageSent(reply);
     }
 
     private string? GetUsernameFromPost(IUserMessage message)

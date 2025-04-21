@@ -33,7 +33,7 @@ public class WhitelistVoteService
     private async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel) =>
         await WhitelistMessageSent(after);
 
-    public async Task WhitelistMessageSent(SocketMessage message)
+    public async Task WhitelistMessageSent(IMessage message)
     {
         var content = message.Content.Replace("\\", "")
             .Replace("*", "")
@@ -54,7 +54,7 @@ public class WhitelistVoteService
             await SendWhitelistVote(message, response);
     }
 
-    private async Task<WhitelistResponse> GetWhitelistResponse(SocketMessage message)
+    private async Task<WhitelistResponse> GetWhitelistResponse(IMessage message)
     {
         List<string> lines = message.Content.Split("\n").ToList();
         List<string> responses = new List<string>();
@@ -97,7 +97,7 @@ public class WhitelistVoteService
         return response.IsSuccessStatusCode;
     }
 
-    public async Task SendWhitelistVote(SocketMessage message, WhitelistResponse whitelist)
+    public async Task SendWhitelistVote(IMessage message, WhitelistResponse whitelist)
     {
         var channel = await _discord.GetChannelAsync(WhitelistVoteChannel) as IMessageChannel;
         
