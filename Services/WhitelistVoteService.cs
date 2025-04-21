@@ -7,7 +7,6 @@ namespace WhitelistBot.Services;
 public class WhitelistVoteService
 {
     private readonly DiscordSocketClient _discord;
-    private readonly IServiceProvider _services;
 
     private const ulong GuildId = 1301753657024319488;
     private const ulong WhitelistChannel = 1302308802619773062;
@@ -18,13 +17,14 @@ public class WhitelistVoteService
     public WhitelistVoteService(IServiceProvider services)
     {
         _discord = services.GetRequiredService<DiscordSocketClient>();
-        _services = services;
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
         _discord.MessageReceived += MessageReceived;
         _discord.MessageUpdated += MessageUpdated;
+        
+        return Task.CompletedTask;
     }
 
     private async Task MessageReceived(SocketMessage message) =>
