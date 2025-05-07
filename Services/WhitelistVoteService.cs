@@ -4,20 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace WhitelistBot.Services;
 
-public class WhitelistVoteService
+public class WhitelistVoteService(IServiceProvider services)
 {
-    private readonly DiscordSocketClient _discord;
+    private readonly DiscordSocketClient _discord = services.GetRequiredService<DiscordSocketClient>();
 
     private const ulong GuildId = 1301753657024319488;
     private const ulong WhitelistChannel = 1302308802619773062;
     private const ulong WhitelistVoteChannel = 1315318721836879942;
 
     private const string NameApi = "https://auth.spacestation14.com/api/query/name?name=";
-    
-    public WhitelistVoteService(IServiceProvider services)
-    {
-        _discord = services.GetRequiredService<DiscordSocketClient>();
-    }
 
     public Task InitializeAsync()
     {
@@ -42,7 +37,7 @@ public class WhitelistVoteService
         if (message.Channel is not SocketTextChannel 
             || message.Channel.Id.ToString() != WhitelistChannel.ToString()
             || message.Author.IsBot
-            || !content.StartsWith("SS14 Username"))
+            || !(content.ToLower().StartsWith("ss14 username") || content.ToLower().StartsWith("username")))
             return;
         
         var response = await GetWhitelistResponse(message);
