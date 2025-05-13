@@ -32,12 +32,13 @@ public class WhitelistVoteService(IServiceProvider services)
     {
         var content = message.Content.Replace("\\", "")
             .Replace("*", "")
-            .Replace("`", "");
+            .Replace("`", "")
+            .ToLower();
         
         if (message.Channel is not SocketTextChannel 
             || message.Channel.Id.ToString() != WhitelistChannel.ToString()
             || message.Author.IsBot
-            || !(content.ToLower().StartsWith("ss14 username") || content.ToLower().StartsWith("username")))
+            || !(content.StartsWith("ss14 username") || content.StartsWith("username")))
             return;
         
         var response = await GetWhitelistResponse(message);
