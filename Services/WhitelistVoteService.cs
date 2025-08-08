@@ -52,7 +52,9 @@ public class WhitelistVoteService(IServiceProvider services)
         
         if (response.IsValid)
         {
+            var success = new Emoji("\u2705");
             await SendWhitelistVote(message, response);
+            await message.AddReactionAsync(success);
             await HandleSuccess(message);
         }
     }
@@ -70,7 +72,14 @@ public class WhitelistVoteService(IServiceProvider services)
                 await lastMessage.DeleteAsync();
         }
 
-        var newErrorMessage = await message.Channel.SendMessageAsync(error, messageReference: message.Reference);
+        if (message is not IUserMessage userMessage)
+        {
+            var buggedErrorMessage = await message.Channel.SendMessageAsync(error, messageReference: message.Reference);
+            _messages.Add(messageAuthorId, buggedErrorMessage);
+            return;
+        }
+
+        var newErrorMessage = await userMessage.ReplyAsync(error);
         _messages.Add(messageAuthorId, newErrorMessage);
     }
 
