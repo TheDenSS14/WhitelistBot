@@ -7,13 +7,14 @@ namespace WhitelistBot.Services;
 public class WhitelistVoteService(IServiceProvider services)
 {
     private readonly DiscordSocketClient _discord = services.GetRequiredService<DiscordSocketClient>();
+    private Dictionary<string, IMessage> _messages = new();
 
     private const ulong GuildId = 1301753657024319488;
     private const ulong WhitelistChannel = 1302308802619773062;
     private const ulong WhitelistVoteChannel = 1315318721836879942;
 
     private const string NameApi = "https://auth.spacestation14.com/api/query/name?name=";
-
+    
     public Task InitializeAsync()
     {
         _discord.MessageReceived += MessageReceived;
@@ -44,44 +45,76 @@ public class WhitelistVoteService(IServiceProvider services)
         var response = await GetWhitelistResponse(message);
         
         if (!response.IsValid && !string.IsNullOrWhiteSpace(response.Error))
-            await message.Channel.SendMessageAsync( $"``{response.Error}``\nYou can dismiss this message and update your existing message to try again.");
+        {
+            await HandleError(message, 
+                $"``{response.Error}``\nYou can dismiss this message and update your existing message to try again.");
+        }
         
         if (response.IsValid)
+        {
             await SendWhitelistVote(message, response);
+            await HandleSuccess(message);
+        }
+    }
+
+    private async Task HandleError(IMessage message, string error)
+    {
+        var messageAuthorId = message.Author.Id.ToString();
+        var deleteLast = _messages.ContainsKey(messageAuthorId);
+
+        if (deleteLast)
+        {
+            var savedError = _messages.Remove(messageAuthorId, out var lastMessage);
+
+            if (savedError && lastMessage is not null)
+                await lastMessage.DeleteAsync();
+        }
+
+        var newErrorMessage = await message.Channel.SendMessageAsync(error, messageReference: message.Reference);
+        _messages.Add(messageAuthorId, newErrorMessage);
+    }
+
+    private async Task HandleSuccess(IMessage message)
+    {
+        var messageAuthorId = message.Author.Id.ToString();
+        var deleteLast = _messages.ContainsKey(messageAuthorId);
+        
+        if (deleteLast)
+        {
+            var lastError = _messages.Remove(messageAuthorId, out var lastMessage);
+            
+            if (!lastError || lastMessage is null)
+                return;
+            
+            await lastMessage.DeleteAsync();
+        }
     }
 
     private async Task<WhitelistResponse> GetWhitelistResponse(IMessage message)
     {
         List<string> lines = message.Content.Split("\n").ToList();
-        List<string> responses = new List<string>();
         
         if (lines.Count < 3)
             return new WhitelistResponse("Form must be completed.");
 
-        for (int i = 0; i < lines.Count; i++)
-        {
-            var line = lines[i];
-            var sides = line.Split(": ");
-            
-            if (sides.Length < 2)
-                continue;
-
-            responses.Add(sides[1]);
-        }
+        var usernameCandidate = lines[0].Split(":");
         
-        if (responses.Count < 3)
+        if (usernameCandidate.Length < 2)
+            return new WhitelistResponse("Username must be provided.");
+        
+        var username = usernameCandidate[1].Trim();
+        
+        if (lines.Count < 3)
             return new WhitelistResponse("Please follow the format.");
 
-        var usernameValid = await IsUsernameValid(responses[0]);
+        var usernameValid = await IsUsernameValid(username);
         
         if (!usernameValid)
             return new WhitelistResponse("Username is invalid.");
         
-        return new WhitelistResponse()
+        return new WhitelistResponse
         {
-            Username = responses[0],
-            Age = responses[1],
-            AboutMePost = responses[2]
+            Username = username,
         };
     }
 
@@ -116,7 +149,7 @@ public class WhitelistVoteService(IServiceProvider services)
             ],
             AllowMultiselect = false,
             LayoutType = PollLayout.Default,
-            Duration = 24
+            Duration = 72
         };
 
         try
@@ -138,14 +171,12 @@ public class WhitelistVoteService(IServiceProvider services)
     {
         public readonly string? Error;
         public string? Username;
-        public string? Age;
-        public string? AboutMePost;
 
         public WhitelistResponse(string error)
         {
             Error = error;
         }
 
-        public bool IsValid => Error == null && !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Age) && !string.IsNullOrEmpty(AboutMePost);
+        public bool IsValid => Error == null && !string.IsNullOrEmpty(Username);
     }
 }
