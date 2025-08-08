@@ -32,9 +32,7 @@ public class WhitelistService
     }
 }
 
-public class WhitelistActionBody
+public class WhitelistActionBody(string username)
 {
-    public string Username { get; set; }
-
-    public WhitelistActionBody(string username) => Username = username;
+    public string Username { get; set; } = username;
 }
