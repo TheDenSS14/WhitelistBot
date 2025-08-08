@@ -27,10 +27,13 @@ public class WhitelistVoteService(IServiceProvider services)
         await WhitelistMessageSent(message);
 
     private async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel) =>
-        await WhitelistMessageSent(after);
+        await WhitelistMessageSent(after, false);
 
-    public async Task WhitelistMessageSent(IMessage message)
+    public async Task WhitelistMessageSent(IMessage message, bool sent = true)
     {
+        if (message.Author is not IGuildUser guildUser)
+            return;
+        
         var content = message.Content.Replace("\\", "")
             .Replace("*", "")
             .Replace("`", "")
@@ -42,6 +45,12 @@ public class WhitelistVoteService(IServiceProvider services)
             || !(content.StartsWith("ss14 username") || content.StartsWith("username")))
             return;
         
+        if (sent && !guildUser.GuildPermissions.ManageRoles)
+        {
+            await message.DeleteAsync();
+            return;
+        }
+        
         var response = await GetWhitelistResponse(message);
         
         if (!response.IsValid && !string.IsNullOrWhiteSpace(response.Error))
@@ -52,7 +61,7 @@ public class WhitelistVoteService(IServiceProvider services)
         
         if (response.IsValid)
         {
-            var success = new Emoji("\u2705");
+            var success = new Emoji("\ud83d\udd50");
             await SendWhitelistVote(message, response);
             await message.AddReactionAsync(success);
             await HandleSuccess(message);
