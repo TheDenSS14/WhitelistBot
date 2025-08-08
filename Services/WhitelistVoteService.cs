@@ -19,6 +19,7 @@ public class WhitelistVoteService(IServiceProvider services)
     {
         _discord.MessageReceived += MessageReceived;
         _discord.MessageUpdated += MessageUpdated;
+        _discord.MessageDeleted += (msg, cacheable1) => MessageDeleted(msg);
         
         return Task.CompletedTask;
     }
@@ -28,6 +29,22 @@ public class WhitelistVoteService(IServiceProvider services)
 
     private async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel) =>
         await WhitelistMessageSent(after, false);
+
+    private async Task MessageDeleted(Cacheable<IMessage, ulong> msg)
+    {
+        if (msg.Value.Channel.Id != WhitelistVoteChannel)
+            return;
+        
+        if (_messages.ContainsKey(msg.Value.Author.Id.ToString()))
+        {
+            _messages.Remove(msg.Value.Author.Id.ToString(), out var errorMsg);
+            
+            if (errorMsg == null)
+                return;
+            
+            await errorMsg.DeleteAsync();
+        }
+    }
 
     public async Task WhitelistMessageSent(IMessage message, bool sent = true)
     {
