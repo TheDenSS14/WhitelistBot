@@ -12,6 +12,7 @@ public class WhitelistVoteService(IServiceProvider services)
     private const ulong GuildId = 1301753657024319488;
     private const ulong WhitelistChannel = 1302308802619773062;
     private const ulong WhitelistVoteChannel = 1315318721836879942;
+    private const ulong WhitelistedRoleId = 1302305187137847447;
 
     private const string NameApi = "https://auth.spacestation14.com/api/query/name?name=";
     
@@ -27,8 +28,15 @@ public class WhitelistVoteService(IServiceProvider services)
     private async Task MessageReceived(SocketMessage message) =>
         await WhitelistMessageSent(message);
 
-    private async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel) =>
+    private async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
+    {
+        // Scuffed solution to discord re-sending already accepted applicants.
+        if (after.Author is not SocketGuildUser user
+            || user.Roles.Any(r => r.Id == WhitelistedRoleId))
+            return;
+        
         await WhitelistMessageSent(after, false);
+    }
 
     private async Task MessageDeleted(Cacheable<IMessage, ulong> msg)
     {
@@ -61,12 +69,6 @@ public class WhitelistVoteService(IServiceProvider services)
             || message.Author.IsBot
             || !(content.StartsWith("ss14 username") || content.StartsWith("username")))
             return;
-        
-        if (sent && !guildUser.GuildPermissions.ManageRoles)
-        {
-            await message.DeleteAsync();
-            return;
-        }
         
         var response = await GetWhitelistResponse(message);
         
@@ -129,7 +131,7 @@ public class WhitelistVoteService(IServiceProvider services)
     {
         List<string> lines = message.Content.Split("\n").ToList();
         
-        if (lines.Count < 3)
+        if (lines.Count < 4)
             return new WhitelistResponse("Form must be completed.");
 
         var usernameCandidate = lines[0].Split(":");
@@ -139,7 +141,7 @@ public class WhitelistVoteService(IServiceProvider services)
         
         var username = usernameCandidate[1].Trim();
         
-        if (lines.Count < 3)
+        if (lines.Count < 4)
             return new WhitelistResponse("Please follow the format.");
 
         var usernameValid = await IsUsernameValid(username);
