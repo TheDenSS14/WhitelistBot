@@ -198,7 +198,9 @@ public class WhitelistVoteService(IServiceProvider services)
             var voteMessage = await channel.SendMessageAsync(messageReference: reference);
             
             await channel.SendMessageAsync(poll: poll); 
-            await message.Channel.SendMessageAsync($"For admins: the vote for {message.Author} can be found [here]({voteMessage.GetJumpUrl()})");
+            
+            if (message is IUserMessage userMessage)
+                await userMessage.ReplyAsync($"For admins: the vote for {message.Author} can be found [here]({voteMessage.GetJumpUrl()})");
         }
         catch (Exception e)
         {
