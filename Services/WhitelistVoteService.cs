@@ -195,8 +195,10 @@ public class WhitelistVoteService(IServiceProvider services)
                 return;
             
             var reference = new MessageReference(message.Id, message.Channel.Id, guildId: GuildId, referenceType: MessageReferenceType.Forward);
-            await channel.SendMessageAsync(poll: poll);
-            await channel.SendMessageAsync(messageReference: reference);
+            var voteMessage = await channel.SendMessageAsync(messageReference: reference);
+            
+            await channel.SendMessageAsync(poll: poll); 
+            await message.Channel.SendMessageAsync($"For admins: the vote can be found [here]({voteMessage.GetJumpUrl()})");
         }
         catch (Exception e)
         {
