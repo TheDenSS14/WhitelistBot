@@ -40,7 +40,7 @@ public class WhitelistVoteService(IServiceProvider services)
 
     private async Task MessageDeleted(Cacheable<IMessage, ulong> msg)
     {
-        if (msg.Value.Channel.Id != WhitelistVoteChannel)
+        if (!msg.HasValue || msg.Value.Channel.Id != WhitelistVoteChannel)
             return;
         
         if (_messages.ContainsKey(msg.Value.Author.Id.ToString()))
@@ -198,7 +198,7 @@ public class WhitelistVoteService(IServiceProvider services)
             var voteMessage = await channel.SendMessageAsync(messageReference: reference);
             
             await channel.SendMessageAsync(poll: poll); 
-            await message.Channel.SendMessageAsync($"For admins: the vote can be found [here]({voteMessage.GetJumpUrl()})");
+            await message.Channel.SendMessageAsync($"For admins: the vote for {message.Author} can be found [here]({voteMessage.GetJumpUrl()})");
         }
         catch (Exception e)
         {
