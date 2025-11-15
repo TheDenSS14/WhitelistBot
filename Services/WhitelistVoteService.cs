@@ -7,7 +7,7 @@ namespace WhitelistBot.Services;
 public class WhitelistVoteService(IServiceProvider services)
 {
     private readonly DiscordSocketClient _discord = services.GetRequiredService<DiscordSocketClient>();
-    private Dictionary<string, IMessage> _messages = new();
+    private readonly Dictionary<string, IMessage> _messages = new();
 
     private const ulong GuildId = 1301753657024319488;
     private const ulong WhitelistChannel = 1302308802619773062;
