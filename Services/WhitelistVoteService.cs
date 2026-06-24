@@ -9,9 +9,7 @@ public class WhitelistVoteService(IServiceProvider services)
     private readonly DiscordSocketClient _discord = services.GetRequiredService<DiscordSocketClient>();
     private Dictionary<string, IMessage> _messages = new();
 
-    private const ulong GuildId = 1301753657024319488;
     private const ulong WhitelistChannel = 1302308802619773062;
-    private const ulong WhitelistVoteChannel = 1315318721836879942;
 
     private const string NameApi = "https://auth.playss14.com/api/query/name?name=";
     
@@ -52,10 +50,10 @@ public class WhitelistVoteService(IServiceProvider services)
         
         if (response.IsValid)
         {
-            var clock = Emote.Parse("🕐");
+            var clockEmoji = new Emoji("⌚");
             
             await HandleSuccess(message);
-            await message.AddReactionAsync(clock);
+            await message.AddReactionAsync(clockEmoji);
         }
     }
 
