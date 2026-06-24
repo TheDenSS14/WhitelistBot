@@ -52,7 +52,6 @@ public class WhitelistVoteService(IServiceProvider services)
         
         if (response.IsValid)
         {
-            await SendWhitelistVote(message, response);
             await HandleSuccess(message);
         }
     }
