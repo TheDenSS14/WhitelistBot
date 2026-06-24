@@ -13,7 +13,7 @@ public class WhitelistVoteService(IServiceProvider services)
     private const ulong WhitelistChannel = 1302308802619773062;
     private const ulong WhitelistVoteChannel = 1315318721836879942;
 
-    private const string NameApi = "https://auth.spacestation14.com/api/query/name?name=";
+    private const string NameApi = "https://auth.playss14.com/api/query/name?name=";
     
     public Task InitializeAsync()
     {
