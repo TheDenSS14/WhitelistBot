@@ -52,7 +52,10 @@ public class WhitelistVoteService(IServiceProvider services)
         
         if (response.IsValid)
         {
+            var clock = Emote.Parse(":clock1:");
+            
             await HandleSuccess(message);
+            await message.AddReactionAsync(clock);
         }
     }
 
@@ -123,47 +126,6 @@ public class WhitelistVoteService(IServiceProvider services)
         var response = await client.GetAsync(NameApi + username);
         
         return response.IsSuccessStatusCode;
-    }
-
-    public async Task SendWhitelistVote(IMessage message, WhitelistResponse whitelist)
-    {
-        var channel = await _discord.GetChannelAsync(WhitelistVoteChannel) as IMessageChannel;
-        
-        var poll = new PollProperties()
-        {
-            Question = new()
-            {
-                Text = whitelist.Username ?? "no username"
-            },
-            Answers =
-            [
-                new PollMediaProperties()
-                {
-                    Text = "Yes"
-                },
-                new PollMediaProperties()
-                {
-                    Text = "No"
-                }
-            ],
-            AllowMultiselect = false,
-            LayoutType = PollLayout.Default,
-            Duration = 72
-        };
-
-        try
-        {
-            if (channel == null)
-                return;
-            
-            var reference = new MessageReference(message.Id, message.Channel.Id, guildId: GuildId, referenceType: MessageReferenceType.Forward);
-            await channel.SendMessageAsync(poll: poll);
-            await channel.SendMessageAsync(messageReference: reference);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
     }
 
     public struct WhitelistResponse

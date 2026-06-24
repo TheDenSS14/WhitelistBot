@@ -21,7 +21,6 @@ public class WhitelistService
     public async Task<string?> WhitelistUser(string name)
     {
         var whitelistActionBody = new WhitelistActionBody(name);
-        Console.WriteLine(whitelistActionBody.Username);
         var whitelistActionBodyJson = JsonConvert.SerializeObject(whitelistActionBody);
         var httpContent = new StringContent(whitelistActionBodyJson, Encoding.UTF8, "application/json");
 

@@ -27,8 +27,7 @@ public class Program
     // for now, i shitcode
     private static readonly List<string> ConnectAddresses =
     [
-        "denstation.net/salvation",
-        "denstation.net/damnation"
+        "denstation.net/salvation"
     ];
 
     public static async Task Main(string[] args)
