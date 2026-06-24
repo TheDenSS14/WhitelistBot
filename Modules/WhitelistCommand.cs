@@ -12,7 +12,7 @@ public class WhitelistCommand : ModuleBase<SocketCommandContext>
 
     [Command("whitelist")]
     [RequireContext(ContextType.Guild)]
-    [RequireUserPermission(GuildPermission.ManageMessages)]
+    [RequireUserPermission(GuildPermission.ManageRoles)]
     public async Task Whitelist(string username, IUser? user = null)
     {
         var response = await WhitelistService.WhitelistUser(username);

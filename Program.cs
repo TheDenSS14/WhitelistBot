@@ -23,6 +23,14 @@ public class Program
         AlwaysDownloadUsers = true,
     };
 
+    // TODO: rewrite this entire fucking bot
+    // for now, i shitcode
+    private static readonly List<string> ConnectAddresses =
+    [
+        "denstation.net/salvation",
+        "denstation.net/damnation"
+    ];
+
     public static async Task Main(string[] args)
     {
         _configuration = new ConfigurationBuilder()
@@ -35,11 +43,9 @@ public class Program
         var databasePort = _configuration["database.port"];
         var databaseTable = _configuration["database.table"];
         var connectionString = $"Server={databaseHost};Port={databasePort};Database={databaseTable};User Id={databaseUsername};Password={databasePassword};";
-        
-        var connectAddress = _configuration["connect_address"];
         var apiToken = _configuration["admin_api_token"];
         
-        if (string.IsNullOrWhiteSpace(apiToken) || string.IsNullOrWhiteSpace(connectAddress))
+        if (string.IsNullOrWhiteSpace(apiToken))
             return;
         
         _services = new ServiceCollection()
@@ -49,7 +55,7 @@ public class Program
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<WhitelistVoteService>()
-            .AddScoped<WhitelistService>(_ => new WhitelistService(connectAddress, apiToken))
+            .AddScoped<WhitelistService>(_ => new WhitelistService(ConnectAddresses, apiToken))
             .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString))
             .BuildServiceProvider();
 

@@ -7,14 +7,14 @@ namespace WhitelistBot.Services;
 public class WhitelistService
 {
     private HttpClient _httpClient;
-    private string ConnectAddress { get; set; }
+    private List<string> ConnectAddresses { get; set; }
     
-    public WhitelistService(string connectAddress, string apiToken)
+    public WhitelistService(List<string> connectAddresses, string apiToken)
     {
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"SS14Token {apiToken}");
         
-        ConnectAddress = connectAddress;
+        ConnectAddresses = connectAddresses;
     }
 
 
@@ -23,18 +23,20 @@ public class WhitelistService
         var whitelistActionBody = new WhitelistActionBody(name);
         var whitelistActionBodyJson = JsonConvert.SerializeObject(whitelistActionBody);
         var httpContent = new StringContent(whitelistActionBodyJson, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"https://{ConnectAddress}/admin/actions/whitelist", httpContent);
 
-        if (!response.IsSuccessStatusCode)
-            return response.StatusCode.ToString();
+        foreach (var connectAddress in ConnectAddresses)
+        {
+            var response = await _httpClient.PostAsync($"https://{connectAddress}/admin/actions/whitelist", httpContent);
+
+            if (!response.IsSuccessStatusCode)
+                return response.StatusCode.ToString();
+        }
 
         return "";
     }
 }
 
-public class WhitelistActionBody
+public class WhitelistActionBody(string username)
 {
-    public string Username { get; set; }
-
-    public WhitelistActionBody(string username) => Username = username;
+    public string Username { get; set; } = username;
 }
