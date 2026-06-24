@@ -52,7 +52,7 @@ public class WhitelistVoteService(IServiceProvider services)
         
         if (response.IsValid)
         {
-            var clock = Emote.Parse("\U0001F550");
+            var clock = Emote.Parse("🕐");
             
             await HandleSuccess(message);
             await message.AddReactionAsync(clock);
